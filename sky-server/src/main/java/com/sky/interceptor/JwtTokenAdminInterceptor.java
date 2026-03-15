@@ -1,6 +1,7 @@
 package com.sky.interceptor;
 
 import com.sky.constant.JwtClaimsConstant;
+import com.sky.context.BaseContext;
 import com.sky.properties.JwtProperties;
 import com.sky.utils.JwtUtil;
 import io.jsonwebtoken.Claims;
@@ -45,7 +46,9 @@ public class JwtTokenAdminInterceptor implements HandlerInterceptor {
         try {
             log.info("jwt校验:{}", token);
             Claims claims = JwtUtil.parseJWT(jwtProperties.getAdminSecretKey(), token);
+
             Long empId = Long.valueOf(claims.get(JwtClaimsConstant.EMP_ID).toString());
+            BaseContext.setCurrentId(empId);
             log.info("当前员工id：", empId);
             //3、通过，放行
             return true;
@@ -54,5 +57,12 @@ public class JwtTokenAdminInterceptor implements HandlerInterceptor {
             response.setStatus(401);
             return false;
         }
+
+    }
+
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex)
+            throws Exception {
+        //清空当前员工id
+        BaseContext.removeCurrentId();
     }
 }

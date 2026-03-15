@@ -1,5 +1,5 @@
 package com.sky.context;
-
+//设置当前线程的id
 public class BaseContext {
 
     public static ThreadLocal<Long> threadLocal = new ThreadLocal<>();
