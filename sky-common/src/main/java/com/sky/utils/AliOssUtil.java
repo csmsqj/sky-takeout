@@ -21,12 +21,11 @@ public class AliOssUtil {
 
     /**
      * 文件上传
-     *
      * @param bytes
      * @param objectName
      * @return
      */
-    public String upload(byte[] bytes, String objectName) {
+     public  String upload(byte[] bytes, String objectName) {
 
         // 创建OSSClient实例。
         OSS ossClient = new OSSClientBuilder().build(endpoint, accessKeyId, accessKeySecret);
