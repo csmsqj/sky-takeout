@@ -97,4 +97,29 @@ Page<Employee> page = PageHelper.startPage(employeePageQueryDTO.getPage(), emplo
 return new PageResult(page.getTotal(), page.getResult());
     }
 
+    @Override
+    public void updateStatus(Integer status, Long id) {
+        //用实体类封装一下数据，因为要修改时间和修改人id,status
+        //先把修改信息给实体类，再调用mapper层的修改方法
+        log.info( "修改员工状态，id：{}，status：{}", id, status);
+        Employee employee = new Employee();
+        employee.setStatus(status);
+        employee.setId(id);
+        employee.setUpdateTime(LocalDateTime.now());
+        employee.setUpdateUser(BaseContext.getCurrentId());
+
+        employeeMapper.updateStatus(employee);
+
+    }
+
+    @Override
+    public void update(EmployeeDTO employeeDTO) {
+        //要修改时间，所以再转化为实体类，但是前端接收都用DTO
+Employee employee = new Employee();
+BeanUtils.copyProperties(employeeDTO, employee);
+employee.setUpdateTime(LocalDateTime.now());
+employeeMapper.update(employee);
+
+    }
+
 }

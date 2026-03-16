@@ -97,4 +97,19 @@ public class EmployeeController {
         return Result.success(pageResult);
     }
 
+    @PostMapping("/status/{status}")
+public Result<Void> updateStatus(@PathVariable Integer status,@RequestParam Long id) {
+        log.info("修改员工状态，id：{}，status：{}", id, status);
+        employeeService.updateStatus(status, id);
+        return Result.success();
+
+    }
+
+    @PutMapping
+    public Result<Void> update(@RequestBody EmployeeDTO employeeDTO) {
+        log.info("修改员工信息：{}", employeeDTO);
+        employeeService.update(employeeDTO);
+        return Result.success();
+    }
+
 }
