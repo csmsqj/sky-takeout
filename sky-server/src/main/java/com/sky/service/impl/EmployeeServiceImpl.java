@@ -91,9 +91,9 @@ return Result.success();
     public PageResult search(EmployeePageQueryDTO employeePageQueryDTO) {
         log.info("员工分页查询，参数：{}", employeePageQueryDTO);
         //引入分页插件，进行分页查询
-        PageHelper.startPage(employeePageQueryDTO.getPage(), employeePageQueryDTO.getPageSize());
 
-        Page<Employee> page=employeeMapper.search(employeePageQueryDTO);
+Page<Employee> page = PageHelper.startPage(employeePageQueryDTO.getPage(), employeePageQueryDTO.getPageSize());
+        employeeMapper.search(employeePageQueryDTO);
 return new PageResult(page.getTotal(), page.getResult());
     }
 
