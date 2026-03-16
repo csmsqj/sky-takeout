@@ -32,6 +32,7 @@ public class CommonController {
         String upload2 = aliyunOSSOperator.upload(file.getBytes(), name);
 
 
+
         return Result.success(upload2);
 
     }
