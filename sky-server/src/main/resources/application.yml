@@ -15,6 +15,10 @@ spring:
 
 mybatis:
   #mapper配置文件
+  # 指定 MyBatis 扫描 XML 映射文件的路径
+  #mybatis.mapper-locations=classpath:mapper/*.xml
+  #### 2. 配置作用解析
+  #* **作用**：告诉 MyBatis，不要去 Java 包对应路径下找 XML 了，直接去 `classpath`（即 resources 目录）下的 `mapper` 文件夹里找。
   mapper-locations: classpath:mapper/*.xml
   type-aliases-package: com.sky.entity
   configuration:
