@@ -19,14 +19,14 @@
 where id = #{id}
 
     </update>
+
+
     <update id="update">
        update employee <set>
 <if test="username != null and username != ''">
             username = #{username},
         </if>
-<if test="name != null">
-            name = #{name},
-        </if>
+
 <if test="idNumber != null">
             id_number = #{idNumber},
         </if>
@@ -38,6 +38,9 @@ where id = #{id}
         </if>
 <if test="updateTime != null">
             update_time = #{updateTime},
+        </if>
+        <if test="updateUser != null">
+            update_user = #{updateUser},
         </if>
 </set>
 where id = #{id}
@@ -55,7 +58,11 @@ select * from employee
     </where>
 order by update_time desc
     </select>
+    <select id="getByID" resultType="com.sky.entity.Employee">
+        select * from employee where id = #{id}
 
+
+    </select>
 
 
 </mapper>

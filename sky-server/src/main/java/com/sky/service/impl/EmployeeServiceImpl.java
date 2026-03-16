@@ -118,8 +118,17 @@ return new PageResult(page.getTotal(), page.getResult());
 Employee employee = new Employee();
 BeanUtils.copyProperties(employeeDTO, employee);
 employee.setUpdateTime(LocalDateTime.now());
+employee.setUpdateUser(BaseContext.getCurrentId());
 employeeMapper.update(employee);
 
+    }
+
+    @Override
+    public Employee getById(Long id) {
+        log.info("根据id查询员工信息：{}", id);
+        Employee employee = employeeMapper.getByID(id);
+        employee.setPassword("***");
+        return employee;
     }
 
 }
