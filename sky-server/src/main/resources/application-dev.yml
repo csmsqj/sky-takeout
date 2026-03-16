@@ -8,7 +8,6 @@ sky:
     password: 123456
   alioss:
     endpoint: oss-cn-beijing.aliyuncs.com
-    access-key-id: ${ALIBABA_ACCESS_KEY_ID}
-    access-key-secret: ${ALIBABA_ACCESS_KEY_SECRET}
+    rigion-id: cn-beijing
     bucket-name: sky-takeout
 
