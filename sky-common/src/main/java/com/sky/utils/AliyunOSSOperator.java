@@ -4,7 +4,6 @@ import com.aliyun.oss.ClientBuilderConfiguration;
 import com.aliyun.oss.OSS;
 import com.aliyun.oss.OSSClientBuilder;
 import com.aliyun.oss.common.auth.CredentialsProviderFactory;
-import com.aliyun.oss.common.auth.EnvironmentVariableCredentialsProvider;
 import com.aliyun.oss.common.comm.SignVersion;
 import com.sky.properties.AliOssProperties;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +26,8 @@ public class AliyunOSSOperator {
         String endpoint = aliOssProperties.getEndpoint();
         String bucketName = aliOssProperties.getBucketName();
         String region = aliOssProperties.getRegion();
+        String accessKey = aliOssProperties.getAccessKey();
+        String secretKey = aliOssProperties.getSecretKey();
 
         String suffix = "";
         if (originalFilename != null && originalFilename.contains(".")) {
@@ -36,15 +37,12 @@ public class AliyunOSSOperator {
         String dir = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy/MM"));
         String objectName = dir + "/" + UUID.randomUUID() + suffix;
 
-        EnvironmentVariableCredentialsProvider credentialsProvider =
-                CredentialsProviderFactory.newEnvironmentVariableCredentialsProvider();
-
         ClientBuilderConfiguration configuration = new ClientBuilderConfiguration();
         configuration.setSignatureVersion(SignVersion.V4);
 
         OSS ossClient = OSSClientBuilder.create()
                 .endpoint(endpoint)
-                .credentialsProvider(credentialsProvider)
+                .credentialsProvider(CredentialsProviderFactory.newDefaultCredentialProvider(accessKey, secretKey))
                 .clientConfiguration(configuration)
                 .region(region)
                 .build();

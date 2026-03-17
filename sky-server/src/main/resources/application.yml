@@ -13,6 +13,13 @@ spring:
       username: ${sky.datasource.username}
       password: ${sky.datasource.password}
 
+# 管理端点配置
+management:
+  endpoints:
+    jmx:
+      exposure:
+        include: '*'  # 暴露所有 JMX 端点
+
 mybatis:
   #mapper配置文件
   # 指定 MyBatis 扫描 XML 映射文件的路径
