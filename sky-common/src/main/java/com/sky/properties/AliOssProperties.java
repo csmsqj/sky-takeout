@@ -11,5 +11,7 @@ import org.springframework.stereotype.Component;
 public class AliOssProperties {
     private String endpoint;
     private String bucketName;
-private String rigionId;
+    private  String accessKey;
+    private String secretKey;
+private String region;
 }
