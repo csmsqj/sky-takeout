@@ -1,0 +1,14 @@
+sky:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    host: ${DB_HOST:prod-mysql.example.com}
+    port: ${DB_PORT:3306}
+    database: ${DB_NAME:sky_take_out_prod}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  alioss:
+    endpoint: oss-cn-shanghai.aliyuncs.com
+    region-id: cn-shanghai
+    bucket-name: sky-takeout-prod
+    access-key: ${OSS_ACCESS_KEY_ID}
+    secret-key: ${OSS_ACCESS_KEY_SECRET}
