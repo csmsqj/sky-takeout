@@ -4,3 +4,16 @@
 *.class
 *Test.java
 **/test/
+# 环境变量配置文件（包含敏感信息，不要提交）
+# Environment files (contains sensitive data, do not commit)
+.env
+.env.local
+*.env
+
+# 本地配置文件（包含密码等敏感信息，不要提交）
+# Local configuration files (contains passwords, do not commit)
+application-*-local.yml
+application-*-local.yaml
+application-local.yml
+application-local.yaml
+*-local.properties
