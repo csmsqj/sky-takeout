@@ -77,11 +77,7 @@ log.info("加密后的密码：{}", password);
         //设置账号状态为启用,设置默认密码为123456,
         employee.setStatus(StatusConstant.ENABLE);
         employee.setPassword(DigestUtils.md5DigestAsHex(PasswordConstant.DEFAULT_PASSWORD.getBytes()));
-employee.setCreateTime(LocalDateTime.now());
-       employee.setUpdateTime(LocalDateTime.now());
-        //设置创建人和修改人id（暂时写死，后续完善）
-        employee.setCreateUser(BaseContext.getCurrentId());
-        employee.setUpdateUser(BaseContext.getCurrentId());
+
 employeeMapper.save(employee);
 return Result.success();
 
@@ -105,8 +101,7 @@ return new PageResult(page.getTotal(), page.getResult());
         Employee employee = new Employee();
         employee.setStatus(status);
         employee.setId(id);
-        employee.setUpdateTime(LocalDateTime.now());
-        employee.setUpdateUser(BaseContext.getCurrentId());
+
 
         employeeMapper.updateStatus(employee);
 
@@ -117,8 +112,7 @@ return new PageResult(page.getTotal(), page.getResult());
         //要修改时间，所以再转化为实体类，但是前端接收都用DTO
 Employee employee = new Employee();
 BeanUtils.copyProperties(employeeDTO, employee);
-employee.setUpdateTime(LocalDateTime.now());
-employee.setUpdateUser(BaseContext.getCurrentId());
+
 employeeMapper.update(employee);
 
     }

@@ -8,7 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Data
-public class DishDTO implements Serializable {
+public class
+DishDTO implements Serializable {
 
     private Long id;
     //菜品名称
