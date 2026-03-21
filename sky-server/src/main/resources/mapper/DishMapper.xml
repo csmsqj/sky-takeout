@@ -5,8 +5,8 @@
 
 
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
-        insert into dish (name, category_id, price, image, description, status)
-        values (#{name},#{categoryId}, #{price}, #{image}, #{description}, #{status})
+        insert into dish (name, category_id, price, image, description, status, create_time, update_time, create_user, update_user)
+        values (#{name},#{categoryId}, #{price}, #{image}, #{description}, #{status}, #{createTime}, #{updateTime}, #{createUser}, #{updateUser})
 
 
     </insert>
@@ -30,9 +30,10 @@
             description=#{description},
         </if>
         <if test="status!=null">
-            status=#{status}
+            status=#{status},
         </if>
-
+        <if test="updateTime != null">update_time = #{updateTime},</if>
+        <if test="updateUser != null">update_user = #{updateUser},</if>
 
     </set>
        where id=#{id}
@@ -81,4 +82,21 @@ and dish.category_id = #{categoryId}
         )
 
     </select>
+    <select id="list" resultType="com.sky.entity.Dish">
+select * from dish
+<where>
+<if test="categoryId!=null">
+and category_id = #{categoryId}
+</if>
+<if test="status!=null">
+and status = #{status}
+</if>
+<if test="name!=null and name!=''">
+and name like concat('%',#{name},'%')
+</if>
+
+</where>
+
+    </select>
+
 </mapper>

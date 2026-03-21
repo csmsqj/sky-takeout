@@ -16,7 +16,7 @@ import org.aspectj.lang.reflect.MethodSignature;
 
 import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDateTime;
-
+//作用是自动填充，无需手动设置了，自动设置了创建时间、修改时间、创建人、修改人
 @Component
 @Aspect
 @Slf4j
