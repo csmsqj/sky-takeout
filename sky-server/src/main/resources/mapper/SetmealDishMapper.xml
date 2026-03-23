@@ -17,7 +17,7 @@ insert into setmeal_dish (setmeal_id, dish_id, name, price,copies) values
 
     <select id="countByDishId" resultType="java.lang.Integer">
         select count(*) from setmeal_dish where dish_id in
-(
+     (
     <foreach collection="ids" item="id" separator="," >
         #{id}
     </foreach>
