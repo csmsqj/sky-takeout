@@ -15,9 +15,10 @@ import org.springframework.web.bind.annotation.RestController;
 public class ShopController {
 @Autowired
 private RedisTemplate redisTemplate;
+//获取营业状态
     @GetMapping("/status")
     public Result<Integer> getStatus() {
-        //
+
         Integer status = (Integer) redisTemplate.opsForValue().get("SHOP_STATUS");
         log.info("获取商户状态，status：{}", status);
         return Result.success(status);

@@ -11,6 +11,8 @@ import com.sky.service.impl.DishServiceImpl;
 import com.sky.vo.DishVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,6 +25,7 @@ public class DishController {
     private DishServiceImpl dishService;
     /*新增菜品*/
     @PostMapping
+    @CachePut(cacheNames = "dishCache", key = "#dishDTO.categoryId")
     public Result<Void> saveDish(@RequestBody DishDTO dishDTO) {
         log.info("新增菜品");
 
@@ -40,6 +43,7 @@ return Result.success(pageResult);
 }
 
 //根据id删除菜品信息
+@CacheEvict(cacheNames = "dishCache",allEntries = true)
 @DeleteMapping
     public Result<Void> delete(@RequestParam List<Long> ids){
 log.info("删除菜品");
@@ -50,6 +54,7 @@ return Result.success();
 
 //修改菜品
     @PutMapping
+    @CacheEvict(cacheNames = "dishCache",allEntries = true)
     public Result<Void> update(@RequestBody DishDTO dishDTO){
        dishService.update(dishDTO);
 
@@ -66,6 +71,7 @@ return Result.success(dishVO);
 
 //起售或停售菜品
     @PostMapping("/status/{status}")
+    @CacheEvict(cacheNames = "dishCache",allEntries = true)
     public Result<Void> startOrStop(@PathVariable Integer status,@RequestParam Long id){
 log.info("起售或停售");
 dishService.startOrStop(status,id);

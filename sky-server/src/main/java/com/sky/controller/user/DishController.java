@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.cache.annotation.Cacheable;
 import java.util.List;
 
 @RestController("userDishController")
@@ -28,9 +29,11 @@ public class DishController {
      * @param categoryId
      * @return
      */
+
     @GetMapping("/list")
     @ApiOperation("用户根据分类id查询菜品")
     //但是服务层公用
+    @Cacheable(value = "dishCache", key = "#categoryId")
     public Result<List<DishVO>> list(Long categoryId) {
         Dish dish = new Dish();
         dish.setCategoryId(categoryId);

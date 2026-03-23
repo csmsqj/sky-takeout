@@ -30,7 +30,7 @@ public interface SetmealMapper {
 
     Page<SetmealVO> page(SetmealPageQueryDTO setmealPageQueryDTO);
 
-
+//获取套餐详情
     Setmeal getById(Long id);
 
     void update(Setmeal setmeal);
