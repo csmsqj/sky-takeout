@@ -54,5 +54,27 @@ select * from setmeal where id in (
     )
 
     </select>
+    <select id="list" resultType="com.sky.entity.Setmeal">
+select * from setmeal
+<where>
+<if test="categoryId!=null">
+    and category_id = #{categoryId}
+</if>
+<if test="status!=null">
+    and status = #{status}
+</if>
+<if test="name!=null and name!=''">
+    and name like concat('%',#{name},'%')
+</if>
+
+</where>
+
+
+
+    </select>
+    <select id="getDishItemById" resultType="com.sky.vo.DishItemVO">
+        select sd.name,sd.copies,d.image,d.description from setmeal_dish sd left outer join
+            dish d on sd.dish_id = d.id where sd.setmeal_id = #{id}
+    </select>
 
 </mapper>

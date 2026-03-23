@@ -1,50 +1,31 @@
 server:
   port: 8080
-
 spring:
   profiles:
     active: dev
   main:
     allow-circular-references: true
-  datasource:
-    druid:
-      driver-class-name: ${sky.datasource.driver-class-name}
-      url: jdbc:mysql://${sky.datasource.host}:${sky.datasource.port}/${sky.datasource.database}?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
-      username: ${sky.datasource.username}
-      password: ${sky.datasource.password}
-  redis:
-    host: ${sky.redis.host}
-    port: ${sky.redis.port}
-    password: ${sky.redis.password}
-    database: ${sky.redis.database}
+
+# mybatis、logging 是公共配置，放这里没问题
 mybatis:
-  #mapper配置文件
-  # 指定 MyBatis 扫描 XML 映射文件的路径
-  #mybatis.mapper-locations=classpath:mapper/*.xml
-  #### 2. 配置作用解析
-  #* **作用**：告诉 MyBatis，不要去 Java 包对应路径下找 XML 了，直接去 `classpath`（即 resources 目录）下的 `mapper` 文件夹里找。
   mapper-locations: classpath:mapper/*.xml
   type-aliases-package: com.sky.entity
   configuration:
-    #开启驼峰命名
     map-underscore-to-camel-case: true
 
 logging:
   level:
     org.springframework.jdbc.support.JdbcTransactionManager: debug
-    com:
-      sky:
-        mapper: debug
-        service: info
-        controller: info
+    com.sky.mapper: debug
+    com.sky.service: info
+    com.sky.controller: info
 
+# JWT 属于通用的业务配置，可以放主配置, 管理端员工生成jwt令牌相关配置
 sky:
   jwt:
-    # 设置jwt签名加密时使用的秘钥
     admin-secret-key: itcast
-    # 设置jwt过期时间
     admin-ttl: 7200000
-    # 设置前端传递过来的令牌名称
     admin-token-name: token
-
-
+    user-secret-key: itheima
+    user-ttl: 7200000
+    user-token-name: authentication

@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -148,4 +149,20 @@ dish.setCategoryId(categoryId);
 
 
     }
+
+    @Override
+    public List<DishVO> listWithFlavor(Dish dish) {
+        List<Dish> list = dishMapper.list(dish);
+        List<DishVO> dishVOList = new ArrayList<>();
+        for (Dish d : list) {
+            DishVO dishVO = new DishVO();
+            BeanUtils.copyProperties(d,dishVO);
+            dishVO.setFlavors(dishFlavorMapper.selectByIds(d.getId()));
+            dishVOList.add(dishVO);
+            log.info("dishVO:{}",dishVO);
+        }
+return dishVOList;
+    }
+
+
 }

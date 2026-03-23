@@ -5,7 +5,6 @@ import com.github.pagehelper.PageHelper;
 import com.sky.constant.MessageConstant;
 import com.sky.dto.SetmealDTO;
 import com.sky.dto.SetmealPageQueryDTO;
-import com.sky.entity.Dish;
 import com.sky.entity.Setmeal;
 import com.sky.entity.SetmealDish;
 import com.sky.mapper.DishMapper;
@@ -13,8 +12,8 @@ import com.sky.mapper.SetmealDishMapper;
 import com.sky.mapper.SetmealMapper;
 import com.sky.result.PageResult;
 import com.sky.result.Result;
-import com.sky.service.SetmealSeivice;
-import com.sky.vo.DishVO;
+import com.sky.service.SetmealService;
+import com.sky.vo.DishItemVO;
 import com.sky.vo.SetmealVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -27,7 +26,7 @@ import java.util.List;
 @Slf4j
 @Service
 
-public class SetMealServiceImpl implements SetmealSeivice {
+public class SetMealServiceImpl implements SetmealService {
 
 @Autowired
 private SetmealMapper setMealMapper;
@@ -144,5 +143,18 @@ if(dishMapper.getByID(dishId).getStatus()==0){
         setmeal.setId(id);
         setmeal.setStatus(status);
         setMealMapper.update(setmeal);
+    }
+
+    //根据条件查询套餐列表，条件是分类 ID，查询状态。
+    @Override
+    public List<Setmeal> list(Setmeal setmeal) {
+        List<Setmeal> list=setMealMapper.list(setmeal);
+        return list;
+    }
+
+    @Override
+    public List<DishItemVO> getDishItemById(Long id) {
+        return setMealMapper.getDishItemById(id);
+
     }
 }
