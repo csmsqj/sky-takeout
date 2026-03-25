@@ -7,6 +7,13 @@
         values (#{userId}, #{dishId}, #{setmealId}, #{name}, #{image}, #{dishFlavor}, #{number}, #{amount}, #{createTime})
 
     </insert>
+    <insert id="saveBanch">
+        insert into shopping_cart (user_id, dish_id, setmeal_id, name, image, dish_flavor, number, amount, create_time)
+        values <foreach collection="shoppingCarts" item="item" separator=",">
+            (#{item.userId}, #{item.dishId}, #{item.setmealId}, #{item.name}, #{item.image}, #{item.dishFlavor}, #{item.number}, #{item.amount}, #{item.createTime})
+
+</foreach>
+    </insert>
 
 
     <select id="list" resultType="com.sky.entity.ShoppingCart">
@@ -34,4 +41,5 @@
 
 
     </select>
+
 </mapper>

@@ -18,6 +18,11 @@ public class JwtTokenUserInterceptor implements HandlerInterceptor {
 
     @Autowired
     private JwtProperties jwtProperties;
+    @Override
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
+        // 请求结束后必须清理 ThreadLocal，防止内存泄漏和越权串号
+        BaseContext.removeCurrentId();
+    }
 
     // 【深度剖析：为什么返回类型必须是 boolean？】
     // return true：保安开闸放行，请求继续走到后续的 Controller 执行业务逻辑。

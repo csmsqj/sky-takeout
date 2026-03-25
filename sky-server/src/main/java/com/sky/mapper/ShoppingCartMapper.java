@@ -5,6 +5,7 @@ import com.sky.entity.ShoppingCart;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
@@ -30,4 +31,11 @@ public interface ShoppingCartMapper {
 //删除购物车项
     @Delete("delete from shopping_cart where user_id = #{userId}")
     void deleteByUserId(Long userId);
+
+    @Select("select * from shopping_cart where user_id = #{userId}")
+    List<ShoppingCart> getByUserId(Long userId);
+
+    //批量插入购物车项
+    //所有foreach-注意加Param，所有插入注意写返回值元素类型，有的需要主键id，需要加上useGeneratedKeys和keyProperty
+    void saveBanch(@Param("shoppingCarts") List<ShoppingCart> shoppingCarts);
 }

@@ -9,9 +9,10 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "sky.wechat")
 @Data
 public class WeChatProperties {
-
+//  微信支付
     private String appid; //小程序的appid
     private String secret; //小程序的秘钥
+    //后面的使用微信支付需要的参数
     private String mchid; //商户号
     private String mchSerialNo; //商户API证书的证书序列号
     private String privateKeyFilePath; //商户私钥文件

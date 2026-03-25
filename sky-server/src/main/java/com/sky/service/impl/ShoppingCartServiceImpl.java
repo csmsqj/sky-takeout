@@ -28,15 +28,32 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     private DishMapper dishMapper;
     @Autowired
     private SetmealMapper setmealMapper;
+@Autowired
+private ShoppingCartServiceImpl proxy;
 
-    @Override
+// 1. 在事务外部加锁
+    // 注意：.intern() 在极端高并发海量用户下可能导致 String Pool 内存占用大，
+    // 单体架构更推荐使用 ConcurrentHashMap 做本地锁池，但 intern() 在中小规模完全可用。
+@Override
+public void add(ShoppingCartDTO shoppingCartDTO) {
+    Long userId = BaseContext.getCurrentId();
+
+    // 1. 在事务外部加锁
+    // 注意：.intern() 在极端高并发海量用户下可能导致 String Pool 内存占用大，
+    // 单体架构更推荐使用 ConcurrentHashMap 做本地锁池，但 intern() 在中小规模完全可用。
+    synchronized (userId.toString().intern()) {
+        // 2. 在锁内部，调用被代理的事务方法
+        proxy.doAddInTransaction(shoppingCartDTO, userId);
+    }
+}
+
     @Transactional
     //添加购物车项
-    public void add(ShoppingCartDTO shoppingCartDTO) {
+    public void doAddInTransaction(ShoppingCartDTO shoppingCartDTO,Long userId) {
         log.info("添加购物车，shoppingCartDTO:{}", shoppingCartDTO);
         // 检查购物车中是否已经存在相同的菜品或套餐，如果存在则增加数量，否则添加新的购物车项
         //必须知道用户的ID才能进行查询，
-        Long userId = BaseContext.getCurrentId();
+
         ShoppingCart shoppingCart = new ShoppingCart();
         shoppingCart.setUserId(userId);
 
