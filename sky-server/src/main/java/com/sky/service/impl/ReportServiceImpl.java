@@ -5,17 +5,22 @@ import com.sky.entity.Orders;
 import com.sky.mapper.OrderDetailMapper;
 import com.sky.mapper.OrderMapper;
 import com.sky.mapper.UserMapper;
-import com.sky.vo.OrderReportVO;
-import com.sky.vo.SalesTop10ReportVO;
-import com.sky.vo.TurnoverReportVO;
-import com.sky.vo.UserReportVO;
+import com.sky.service.WorkspaceService;
+import com.sky.vo.*;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.jsqlparser.expression.DateTimeLiteralExpression;
 import org.apache.commons.lang.StringUtils;
 import org.apache.poi.util.StringUtil;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -33,6 +38,8 @@ public class ReportServiceImpl implements ReportService{
     private OrderDetailMapper orderDetailMapper;
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    private WorkspaceService workspaceService;
 
     @Override
     public TurnoverReportVO turnoverStatistics(LocalDate begin, LocalDate end) {
@@ -130,7 +137,11 @@ LocalDateTime beginTime = localDate.atTime(LocalTime.MIN);
             totalOrderCount+=totalCount;
             validOrderCount+=validCount;
         }
-        Double orderCompletionRate = validOrderCount.doubleValue()/totalOrderCount;
+        Double orderCompletionRate = 0.0;
+        if(totalOrderCount!=0){
+            orderCompletionRate = validOrderCount.doubleValue()/totalOrderCount;
+        }
+
         return OrderReportVO.builder()
                 .dateList(StringUtils.join(dateList, ","))
                 .orderCountList(StringUtils.join(totalOrderCountList, ","))
@@ -167,5 +178,81 @@ return SalesTop10ReportVO.builder()
 .nameList(StringUtils.join(nameList, ","))
 .numberList(StringUtils.join(numberList, ","))
 .build();
+    }
+
+    @Override
+    public void export(HttpServletResponse response) {
+        //先查询数据库获取营业数据
+        LocalDateTime begin =LocalDate.now().atTime(LocalTime.MIN).plusDays(-29);
+        LocalDateTime end = LocalDate.now().atTime(LocalTime.MAX);
+        BusinessDataVO businessDataVO = workspaceService.getBusinessData(begin, end);
+
+        //读入 EXCEL 文件，再把它输入到浏览器当中
+        InputStream inputStream= this.getClass().getClassLoader().getResourceAsStream("template/运营数据报表模板.xlsx");
+        //在 FINALLY 中关闭流，确保它们始终可以关闭，不会直接抛出异常。所以在外部声明变量
+        XSSFWorkbook xssfWorkbook=null;
+        ServletOutputStream servletOutputStream=null;
+
+
+
+        try {
+             xssfWorkbook= new XSSFWorkbook(inputStream);
+            //填充数据,首先获取 SHEET，再获取行，再获取格子
+            XSSFSheet xssfSheet = xssfWorkbook.getSheetAt(0);
+xssfSheet.getRow(1).getCell(1).setCellValue(begin+" to "+end);
+xssfSheet.getRow(3).getCell(2).setCellValue(businessDataVO.getTurnover());
+            xssfSheet.getRow(3).getCell(4).setCellValue(businessDataVO.getOrderCompletionRate());
+            xssfSheet.getRow(3).getCell(6).setCellValue(businessDataVO.getNewUsers());
+            xssfSheet.getRow(4).getCell(2).setCellValue(businessDataVO.getValidOrderCount());
+            xssfSheet.getRow(4).getCell(4).setCellValue(businessDataVO.getUnitPrice());
+            LocalDate begin2=LocalDate.now().plusDays(-29);
+            for(int i=0;i<30;i++) {
+                LocalDate date=begin2.plusDays(i);
+                //必须要通过当天年月日时间来查,再把它转化为年月日时分秒
+                BusinessDataVO businessDataVOI = workspaceService.getBusinessData(date.atTime(LocalTime.MIN), date.atTime(LocalTime.MAX));
+                XSSFRow row = xssfSheet.getRow(7 + i);
+row.getCell(1).setCellValue(date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+                row.getCell(2).setCellValue(businessDataVOI.getTurnover());
+                row.getCell(3).setCellValue(businessDataVOI.getValidOrderCount());
+                row.getCell(4).setCellValue(businessDataVOI.getOrderCompletionRate());
+                row.getCell(5).setCellValue(businessDataVOI.getUnitPrice());
+                row.getCell(6).setCellValue(businessDataVOI.getNewUsers());
+            }
+
+            //用输出流输出到浏览器当中
+             servletOutputStream= response.getOutputStream();
+xssfWorkbook.write(servletOutputStream);
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        finally {
+            try {
+                if(inputStream!=null){
+                    inputStream.close();
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            try {
+                if(servletOutputStream!=null){
+                    servletOutputStream.close();
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            try {
+                if(xssfWorkbook!=null){
+                    xssfWorkbook.close();
+                }
+            }
+            catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+
+    }
+
+
     }
 }

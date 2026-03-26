@@ -89,7 +89,7 @@ public class OrderController {
 
     }
 
-      @PutMapping("delivery/{id}")
+      @PutMapping("/delivery/{id}")
       //修改为派送中
     public Result delivery(@PathVariable Long id) {
         log.info("订单派送，订单id：{}", id);

@@ -20,7 +20,7 @@ public class OrderTask {
 
     //订单超时订单
     //每分钟执行一次
-    @Scheduled(cron = "0 1 * * * ? ")
+    @Scheduled(cron = "0 * * * * ? ")
     public void orderTimeOut() {
         log.info("订单超时订单{}", LocalDateTime.now());
 //订单表中查超时订单，具体是要查未付款且超过15分钟的订单(现在的时间更多一些)

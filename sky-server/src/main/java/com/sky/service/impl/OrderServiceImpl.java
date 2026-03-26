@@ -126,7 +126,7 @@ private WebSocketServer webSocketServer;
         Map map = new HashMap<>();
         map.put("type", 1);
         map.put("orderId", ordersDB.getId());
-        map.put("concent", "订单支付成功");
+        map.put("content", "订单支付成功");
 
         webSocketServer.sendToAllClient(JSON.toJSONString(map));
 
@@ -299,6 +299,7 @@ orderMapper.update(order);
         Orders order=Orders.builder()
                 .status(Orders.CANCELLED)
                 .id(ordersRejectionDTO.getId())
+                .rejectionReason(ordersRejectionDTO.getRejectionReason())
                 .build();
 
         orderMapper.update(order);
@@ -369,7 +370,7 @@ if(orders==null){
         Map map = new HashMap<>();
         map.put("type", 2);
         map.put("orderId", id);
-        map.put("concent", "订单号："+orders.getNumber());
+        map.put("content", "订单号："+orders.getNumber());
         webSocketServer.sendToAllClient(JSON.toJSONString(map));
 
 

@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -72,6 +73,13 @@ TurnoverReportVO turnoverReportVO = reportService.turnoverStatistics(begin, end)
         return Result.success(salesTop10ReportVO);
 }
 
+@GetMapping("/export")
+    public Result<Void> export(HttpServletResponse  response){
+        log.info("导出数据");
+        reportService.export(response);
+        return Result.success();
 
+
+    }
 
 }

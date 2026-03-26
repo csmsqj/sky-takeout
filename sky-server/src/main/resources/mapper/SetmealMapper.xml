@@ -77,7 +77,7 @@ select * from setmeal
             dish d on sd.dish_id = d.id where sd.setmeal_id = #{id}
     </select>
     <select id="countByMap" resultType="java.lang.Integer">
-select * from setmeal
+select count(*) from setmeal
 <where>
 <if test="categoryId!=null">
     and category_id = #{categoryId}
