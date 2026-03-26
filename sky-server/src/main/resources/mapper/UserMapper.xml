@@ -8,4 +8,16 @@
     insert into user (openid,create_time,name ) values (#{openid}, #{createTime}, #{name})
 
     </insert>
+    <select id="countByDate" resultType="java.lang.Integer">
+select count(1) from user
+<where>
+<if test="beginTime != null">
+create_time &gt;= #{beginTime}
+</if>
+<if test="endTime != null">
+and create_time &lt;= #{endTime}
+</if>
+
+</where>
+    </select>
 </mapper>

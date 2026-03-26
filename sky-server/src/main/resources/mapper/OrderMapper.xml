@@ -60,4 +60,56 @@
         </where>
         order by order_time desc
     </select>
+    <select id="selectByBeginTimeAndEndTime" resultType="java.lang.Double">
+        select sum(amount) from orders
+        <where>
+            <if test="beginTime != null">
+                and order_time &gt;= #{beginTime}
+            </if>
+            <if test="endTime != null">
+                and order_time &lt;= #{endTime}
+
+            </if>
+        <if test="status != null">
+                and status = #{status}
+
+        </if>
+        </where>
+
+    </select>
+    <select id="countByDate" resultType="java.lang.Integer">
+        select count(*) from orders
+        <where>
+            <if test="beginTime != null">
+                and order_time &gt;= #{beginTime}
+            </if>
+            <if test="endTime != null">
+                and order_time &lt;= #{endTime}
+
+            </if>
+        <if test="status != null">
+                and status = #{status}
+
+        </if>
+        </where>
+
+
+    </select>
+    <select id="selectTop10" resultType="java.util.Map">
+select od.name name,sum(od.number) number from orders o left outer join order_detail od on o.id = od.order_id
+<where>
+<if test="beginTime != null">
+and o.order_time &gt;= #{beginTime}
+</if>
+<if test="endTime != null">
+and o.order_time &lt;= #{endTime}
+</if>
+<if test="status != null">
+and o.status = #{status}
+</if>
+</where>
+group by od.name
+order by sum(od.number) desc
+limit 10
+    </select>
 </mapper>

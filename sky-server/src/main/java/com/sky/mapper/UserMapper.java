@@ -5,7 +5,10 @@ import com.sky.entity.User;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+
+import java.time.LocalDateTime;
 
 
 @Mapper
@@ -17,4 +20,5 @@ public interface UserMapper {
  //插入数据，并且要获取主键值。因为前端返回需要用到，所以必须要使用动态XML。
     void insert(User user);
 
+    Integer countByDate(@Param("beginTime") LocalDateTime beginTime,@Param("endTime") LocalDateTime endTime);
 }
