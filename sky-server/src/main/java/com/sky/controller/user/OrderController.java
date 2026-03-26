@@ -68,4 +68,13 @@ public class OrderController {
         return Result.success();
     }
 
+
+    //订单提醒用户点击催单会提醒浏览器管理端
+    @GetMapping("/reminder/{id}")
+    public Result<Void> reminder(@PathVariable Long id) {
+        log.info("订单提醒，订单id为：{}", id);
+        orderService.reminder(id);
+        return Result.success();
+    }
+
 }

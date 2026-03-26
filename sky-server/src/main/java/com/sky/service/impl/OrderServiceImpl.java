@@ -1,12 +1,11 @@
 package com.sky.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.sky.constant.MessageConstant;
 import com.sky.context.BaseContext;
-import com.sky.dto.OrdersPageQueryDTO;
-import com.sky.dto.OrdersPaymentDTO;
-import com.sky.dto.OrdersSubmitDTO;
+import com.sky.dto.*;
 import com.sky.entity.AddressBook;
 import com.sky.entity.OrderDetail;
 import com.sky.entity.Orders;
@@ -18,8 +17,11 @@ import com.sky.mapper.ShoppingCartMapper;
 import com.sky.result.PageResult;
 import com.sky.service.OrderService;
 import com.sky.vo.OrderPaymentVO;
+import com.sky.vo.OrderStatisticsVO;
 import com.sky.vo.OrderSubmitVO;
 import com.sky.vo.OrderVO;
+import com.sky.webSocket.WebSocketServer;
+import io.swagger.util.Json;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +30,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -42,7 +46,8 @@ public class OrderServiceImpl implements OrderService {
     private ShoppingCartMapper shoppingCartMapper;
     @Autowired
     private OrderDetailMapper orderDetailMapper;
-
+@Autowired
+private WebSocketServer webSocketServer;
     //用户下单
     @Override
     @Transactional
@@ -116,6 +121,15 @@ public class OrderServiceImpl implements OrderService {
                 .build();
         orderMapper.update(orders);
 
+//向管理端浏览器发送提醒通知有新订单支付成功了
+        //要求是传 jSON 类型的数据，可以传到键值对集合当中，再把它转化为 jSON
+        Map map = new HashMap<>();
+        map.put("type", 1);
+        map.put("orderId", ordersDB.getId());
+        map.put("concent", "订单支付成功");
+
+        webSocketServer.sendToAllClient(JSON.toJSONString(map));
+
         // 返回空的VO，前端拿到非null就认为成功
         return new OrderPaymentVO();
     }
@@ -166,6 +180,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    //用户取消订单
     public void cancle(Long id) {
         //存在性与状态拦截：根据 id 查出数据库实体 ordersDB。若为空，抛出带常量的业务异常
         Orders orders = orderMapper.getById(id);
@@ -187,6 +202,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    //再次购买（重复购买），就是把之前订单的菜品重新添加到购物车
     public void repetition(Long id) {
         //将订单详情表数据查询出来，封装到购物车对象
         List<OrderDetail> orderDetails = orderDetailMapper.selectByOrderIds(List.of(id));
@@ -226,6 +242,138 @@ public class OrderServiceImpl implements OrderService {
         return new PageResult(page.getTotal(), orderVOList);
     }
 
+    @Override
+    public OrderStatisticsVO statistics() {
+        log.info("订单统计");
+        //2待接单 3已接单 4派送中
+        OrderStatisticsVO orderStatisticsVO = new OrderStatisticsVO();
+        Integer l2 = orderMapper.countByStatus(Orders.TO_BE_CONFIRMED);
+Integer l3=orderMapper.countByStatus(Orders.CONFIRMED);
+Integer l4=orderMapper.countByStatus(Orders.DELIVERY_IN_PROGRESS);
+        orderStatisticsVO.setToBeConfirmed(l2);
+        orderStatisticsVO.setConfirmed(l3);
+orderStatisticsVO.setDeliveryInProgress(l4);
+return orderStatisticsVO;
+    }
+
+    @Override
+    //查询订单详情
+    public OrderVO details(Long id) {
+        log.info("查询订单详情，订单id：{}", id);
+        Orders orders = orderMapper.getById(id);
+        if (orders == null) {
+            throw new RuntimeException(MessageConstant.ORDER_NOT_FOUND);
+        }
+        List<OrderDetail> orderDetails = orderDetailMapper.selectByOrderIds(List.of(id));
+        OrderVO orderVO = new OrderVO();
+        BeanUtils.copyProperties(orders, orderVO);
+        orderVO.setOrderDetailList(orderDetails);
+        return orderVO;
+
+
+    }
+
+    @Override
+    //接单
+    public void confim(OrdersConfirmDTO ordersConfirmDTO) {
+        log.info("接单，订单id：{}", ordersConfirmDTO.getId());
+        Orders orders = orderMapper.getById(ordersConfirmDTO.getId());
+        if(orders==null){
+            throw new RuntimeException(MessageConstant.ORDER_NOT_FOUND);
+        }
+
+        Orders order=Orders.builder()
+               .status(Orders.CONFIRMED)
+                .id(ordersConfirmDTO.getId())
+                       .build();
+
+orderMapper.update(order);
+    }
+
+    @Override
+    public void rejection(OrdersRejectionDTO ordersRejectionDTO) {
+        Orders orders = orderMapper.getById(ordersRejectionDTO.getId());
+        if(orders==null){
+            throw new RuntimeException(MessageConstant.ORDER_NOT_FOUND);
+        }
+        Orders order=Orders.builder()
+                .status(Orders.CANCELLED)
+                .id(ordersRejectionDTO.getId())
+                .build();
+
+        orderMapper.update(order);
+
+
+    }
+
+    @Override
+    public void adminCancle(OrdersCancelDTO ordersCancelDTO) {
+        log.info("取消订单，订单id：{}", ordersCancelDTO.getId());
+        Orders orders = orderMapper.getById(ordersCancelDTO.getId());
+if(orders==null){
+    throw new RuntimeException(MessageConstant.ORDER_NOT_FOUND);
+}
+        Orders order=Orders.builder()
+                .status(Orders.CANCELLED)
+                .cancelReason(ordersCancelDTO.getCancelReason())
+                .id(ordersCancelDTO.getId())
+                .build();
+orderMapper.update(order);
+    }
+
+    @Override
+    public void delivery(Long id) {
+        Orders orders = orderMapper.getById(id);
+        if (orders == null) {
+            throw new RuntimeException(MessageConstant.ORDER_NOT_FOUND);
+        }
+        if (orders.getStatus() != Orders.CONFIRMED) {
+throw new RuntimeException(MessageConstant.CANT_PAISONG);
+        }
+
+        Orders order=Orders.builder()
+                .status(Orders.DELIVERY_IN_PROGRESS)
+                .id(id)
+                .build();
+        orderMapper.update(order);
+
+    }
+
+    @Override
+    public void complete(Long id) {
+        log.info("完成订单，订单id：{}", id);
+        Orders orders = orderMapper.getById(id);
+        if(orders==null){
+            throw new RuntimeException(MessageConstant.ORDER_NOT_FOUND);
+        }
+        if(orders.getStatus()!=Orders.DELIVERY_IN_PROGRESS){
+            throw new RuntimeException(MessageConstant.CANT_COMPLETE);
+        }
+        Orders order=Orders.builder()
+                .status(Orders.COMPLETED)
+                .id(id)
+                .build();
+        orderMapper.update(order);
+
+    }
+
+    @Override
+    public void reminder(Long id) {
+
+        //先查订单 ID 是否存在
+        Orders orders = orderMapper.getById(id);
+if(orders==null){
+    throw new RuntimeException(MessageConstant.ORDER_NOT_FOUND);
+}
+//查出来的订单 ID设置JSON
+        Map map = new HashMap<>();
+        map.put("type", 2);
+        map.put("orderId", id);
+        map.put("concent", "订单号："+orders.getNumber());
+        webSocketServer.sendToAllClient(JSON.toJSONString(map));
+
+
+    }
 
     /**
      * 私有辅助方法：将 Page<Orders> 转换为 List<OrderVO> 并拼接菜品字符串
@@ -250,10 +398,10 @@ public class OrderServiceImpl implements OrderService {
             orderIds.add(orders.getId());
         }
 
-        // 一次SQL查出所有订单的明细，而不是每个订单查一次
+        // 一次SQL查出所有订单明细，而不是每个订单查一次
         List<OrderDetail> allDetails = orderDetailMapper.selectByOrderIds(orderIds);
 
-        // ==================== 第二步：按orderId分组，方便后续取用 ====================
+        // ==================== 第二步：按orderId分组订单明细，方便后续取用 ====================
         // key=订单ID，value=该订单下的所有明细列表
         java.util.Map<Long, List<OrderDetail>> detailMap = new java.util.HashMap<>();
         for (OrderDetail detail : allDetails) {
