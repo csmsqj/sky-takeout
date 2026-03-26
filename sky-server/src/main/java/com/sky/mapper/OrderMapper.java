@@ -49,5 +49,8 @@ public interface OrderMapper {
 
     Integer countByDate(@Param("beginTime")  LocalDateTime beginTime,@Param("endTime") LocalDateTime endTime,@Param("status") Integer status);
 
+    Integer countByMap(Map map);
+    Double sumByMap(Map map);
+
     List<Map<String, Object>> selectTop10(@Param("beginTime") LocalDateTime beginTime,@Param("endTime") LocalDateTime endTime,@Param("status") Integer status);
 }

@@ -76,5 +76,23 @@ select * from setmeal
         select sd.name,sd.copies,d.image,d.description from setmeal_dish sd left outer join
             dish d on sd.dish_id = d.id where sd.setmeal_id = #{id}
     </select>
+    <select id="countByMap" resultType="java.lang.Integer">
+select * from setmeal
+<where>
+<if test="categoryId!=null">
+    and category_id = #{categoryId}
+</if>
+<if test="name!=null and name!=''">
+    and name like concat('%',#{name},'%')
+</if>
+<if test="status!=null">
+    and status = #{status}
+</if>
+
+
+</where>
+
+
+    </select>
 
 </mapper>

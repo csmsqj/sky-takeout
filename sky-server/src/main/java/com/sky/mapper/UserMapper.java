@@ -9,6 +9,7 @@ import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 
 @Mapper
@@ -21,4 +22,6 @@ public interface UserMapper {
     void insert(User user);
 
     Integer countByDate(@Param("beginTime") LocalDateTime beginTime,@Param("endTime") LocalDateTime endTime);
+
+    Integer countByMap(Map map);
 }
