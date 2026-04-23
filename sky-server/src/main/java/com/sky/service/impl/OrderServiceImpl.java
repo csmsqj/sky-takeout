@@ -27,6 +27,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.sky.exception.OrderBusinessException;
+import java.math.BigDecimal;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -52,54 +54,65 @@ private WebSocketServer webSocketServer;
     @Override
     @Transactional
     public OrderSubmitVO submit(OrdersSubmitDTO orderSubmitDTO) {
-        //1判断是否异常，比如地址簿id是否存在(通过Dto的地址id查)，
+
+        // 1. 校验地址簿
         AddressBook addressBook = addressBookMapper.getById(orderSubmitDTO.getAddressBookId());
         if (addressBook == null) {
-
             throw new RuntimeException(MessageConstant.ADDRESS_BOOK_IS_NULL);
         }
+
+        // 2. 获取当前用户
         Long userId = BaseContext.getCurrentId();
-//购物车是否为空（通过user_id）
+
+        // 3. 校验购物车
         List<ShoppingCart> list = shoppingCartMapper.getByUserId(userId);
         if (list == null || list.size() == 0) {
             throw new RuntimeException(MessageConstant.SHOPPING_CART_IS_NULL);
         }
 
-        //2订单表插入一条数据,需要Order对象,额外需要设置时间，状态，订单号，user用户id，（手机号，地址，收件人）
+        // 4. 金额校验：超过1000元，直接返回给前端提示信息
+        if (orderSubmitDTO.getAmount() != null
+                && orderSubmitDTO.getAmount().compareTo(new BigDecimal("1000")) > 0) {
+            throw new OrderBusinessException("您的订单金额已超过1000元");
+        }
+
+        // 5. 封装订单数据
         Orders order = new Orders();
         BeanUtils.copyProperties(orderSubmitDTO, order);
-        order.setAddress(addressBook.getDetail());// 地址
-        order.setPhone(addressBook.getPhone());//手机号
-        order.setConsignee(addressBook.getConsignee());//收货人
-        order.setUserId(userId);//用户id
-        order.setOrderTime(LocalDateTime.now());//订单时间
-        order.setStatus(Orders.PENDING_PAYMENT);//待付款
-        order.setPayStatus(Orders.UN_PAID);//待支付
-        order.setNumber(String.valueOf(System.currentTimeMillis()));//订单号
-        orderMapper.insert(order);//注意插入的id会回填到order对象中
-        //3订单明细表插入多条数据（除了购物车数据的菜品与口味或者套餐，价格，菜品id,name,image插入,还需要补充OrderId，所以封装到对象）
+        order.setAddress(addressBook.getDetail());          // 地址
+        order.setPhone(addressBook.getPhone());             // 手机号
+        order.setConsignee(addressBook.getConsignee());     // 收货人
+        order.setUserId(userId);                            // 用户id
+        order.setOrderTime(LocalDateTime.now());            // 下单时间
+        order.setStatus(Orders.PENDING_PAYMENT);            // 待付款
+        order.setPayStatus(Orders.UN_PAID);                 // 未支付
+        order.setNumber(String.valueOf(System.currentTimeMillis())); // 订单号
+
+        // 6. 插入订单表
+        orderMapper.insert(order);
+
+        // 7. 插入订单明细表
         List<OrderDetail> orderDetails = new ArrayList<>();
         for (ShoppingCart shoppingCart : list) {
             OrderDetail orderDetail = new OrderDetail();
             BeanUtils.copyProperties(shoppingCart, orderDetail);
             orderDetail.setOrderId(order.getId());
             orderDetails.add(orderDetail);
-
         }
         orderDetailMapper.insertBatch(orderDetails);
 
-        //4清空购物车
+        // 8. 清空购物车
         shoppingCartMapper.deleteByUserId(userId);
 
-        //5返回指定的VO对象
+        // 9. 返回下单结果
         OrderSubmitVO orderSubmitVO = OrderSubmitVO.builder()
                 .id(order.getId())
                 .orderNumber(order.getNumber())
                 .orderTime(order.getOrderTime())
                 .orderAmount(order.getAmount())
                 .build();
-        return orderSubmitVO;
 
+        return orderSubmitVO;
     }
 
     /**
@@ -217,9 +230,6 @@ private WebSocketServer webSocketServer;
             shoppingCart.setUserId(BaseContext.getCurrentId());
             shoppingCart.setCreateTime(LocalDateTime.now());
             shoppingCarts.add(shoppingCart);
-
-
-
         }
 
         shoppingCartMapper.saveBanch(shoppingCarts);

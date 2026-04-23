@@ -38,7 +38,8 @@ public interface OrderMapper {
     Integer countByStatus(Integer status);
 
     @Select("select * from orders where status = #{status} and order_time < #{orderTime}")
-    List<Orders> selectByStatusAndOrderTimeOut(Integer status, LocalDateTime orderTime);
+    List<Orders> selectByStatusAndOrderTimeOut(@Param("status") Integer status,
+                                               @Param("orderTime") LocalDateTime orderTime);
 
 
 

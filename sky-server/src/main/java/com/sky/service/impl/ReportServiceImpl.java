@@ -188,7 +188,8 @@ return SalesTop10ReportVO.builder()
         BusinessDataVO businessDataVO = workspaceService.getBusinessData(begin, end);
 
         //读入 EXCEL 文件，再把它输入到浏览器当中
-        InputStream inputStream= this.getClass().getClassLoader().getResourceAsStream("template/运营数据报表模板.xlsx");
+        InputStream inputStream= this.getClass().getClassLoader()
+                .getResourceAsStream("template/运营数据报表模板.xlsx");
         //在 FINALLY 中关闭流，确保它们始终可以关闭，不会直接抛出异常。所以在外部声明变量
         XSSFWorkbook xssfWorkbook=null;
         ServletOutputStream servletOutputStream=null;

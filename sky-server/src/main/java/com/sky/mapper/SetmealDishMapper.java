@@ -13,7 +13,7 @@ public interface SetmealDishMapper {
     int countByDishId(@Param("ids") List<Long> ids);
 
 
-    void save(List<SetmealDish> setmealDishes);
+    void save(@Param("setmealDishes") List<SetmealDish> setmealDishes);
 
     List<SetmealDish> getBySetmealId(Long id);
 
